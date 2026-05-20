@@ -22,5 +22,3 @@ python main.py
 Evaluation writes the test metrics plus one MP4, tracking CSV, and tracking PNG
 for each test sequence used by the evaluation.
 
-Keep source code in git. Do not commit `data/`, checkpoints, logs, or generated
-results.

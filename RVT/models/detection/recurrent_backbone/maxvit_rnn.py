@@ -9,12 +9,12 @@ try:
 except ImportError:
     th_compile = None
 
-from data.utils.types import FeatureMap, BackboneFeatures, LstmState, LstmStates
+from RVT.data.utils.types import FeatureMap, BackboneFeatures, LstmState, LstmStates
 
 # from models.layers.rnn import DWSConvLSTM2d
-from models.layers.s5.s5_model import S5Block
+from RVT.models.layers.s5.s5_model import S5Block
 
-from models.layers.maxvit.maxvit import (
+from RVT.models.layers.maxvit.maxvit import (
     PartitionAttentionCl,
     nhwC_2_nChw,
     get_downsample_layer_Cf2Cl,
@@ -167,6 +167,7 @@ class RNNDetectorStage(nn.Module):
         downsample_cfg = stage_cfg.downsample
         lstm_cfg = stage_cfg.lstm
         attention_cfg = stage_cfg.attention
+        s5_cfg = stage_cfg.get("s5", {})
 
         self.downsample_cf2cl = get_downsample_layer_Cf2Cl(
             dim_in=dim_in,
@@ -184,8 +185,23 @@ class RNNDetectorStage(nn.Module):
         ]
         self.att_blocks = nn.ModuleList(blocks)
 
+        s5_state_dim = s5_cfg.get("state_dim", None)
+        if s5_state_dim is None:
+            s5_state_dim = stage_dim
         self.s5_block = S5Block(
-            dim=stage_dim, state_dim=stage_dim, bidir=False, bandlimit=0.5
+            dim=stage_dim,
+            state_dim=int(s5_state_dim),
+            bidir=bool(s5_cfg.get("bidir", False)),
+            block_count=int(s5_cfg.get("block_count", 1)),
+            liquid=bool(s5_cfg.get("liquid", False)),
+            degree=int(s5_cfg.get("degree", 1)),
+            factor_rank=s5_cfg.get("factor_rank", None),
+            bcInit=s5_cfg.get("bcInit", s5_cfg.get("bc_init", None)),
+            ff_mult=float(s5_cfg.get("ff_mult", 1.0)),
+            glu=bool(s5_cfg.get("glu", True)),
+            ff_dropout=float(s5_cfg.get("ff_dropout", 0.0)),
+            attn_dropout=float(s5_cfg.get("attn_dropout", 0.0)),
+            bandlimit=s5_cfg.get("bandlimit", 0.5),
         )
 
         """

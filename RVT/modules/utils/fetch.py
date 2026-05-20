@@ -1,8 +1,8 @@
 import lightning.pytorch as pl
 from omegaconf import DictConfig
 
-from modules.data.genx import DataModule as genx_data_module
-from modules.detection import Module as rnn_det_module
+from RVT.modules.data.genx import DataModule as genx_data_module
+from RVT.modules.detection import Module as rnn_det_module
 
 
 def fetch_model_module(config: DictConfig) -> pl.LightningModule:

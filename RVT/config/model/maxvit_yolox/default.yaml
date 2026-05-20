@@ -41,8 +41,23 @@ model:
         dws_conv_kernel_size: 3
         drop_cell_update: 0
       s5:
+        # The S5 input dimension is the stage dimension. state_dim controls the
+        # SSM state width used inside every stage. ``null`` keeps the official
+        # checkpoint-compatible behavior: one state width per stage, equal to
+        # that stage's channel dimension.
         dim: 80
-        state_dim: 80
+        state_dim: null
+        bidir: False
+        block_count: 1
+        liquid: False
+        degree: 1
+        factor_rank: null
+        bcInit: null
+        ff_mult: 1.0
+        glu: True
+        ff_dropout: 0.0
+        attn_dropout: 0.0
+        bandlimit: 0.5
       s4:
         dim: 80
         state_dim: 80 

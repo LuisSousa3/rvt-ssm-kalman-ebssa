@@ -5,9 +5,9 @@ import torch
 from einops import rearrange
 from omegaconf import DictConfig
 
-from data.utils.types import ObjDetOutput
-from loggers.wandb_logger import WandbLogger
-from utils.evaluation.prophesee.visualize.vis_utils import (
+from RVT.data.utils.types import ObjDetOutput
+from RVT.loggers.wandb_logger import WandbLogger
+from RVT.utils.evaluation.prophesee.visualize.vis_utils import (
     LABELMAP_GEN1,
     LABELMAP_GEN4_SHORT,
     draw_bboxes,

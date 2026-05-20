@@ -4,8 +4,8 @@ from typing import List, Optional, Union, Tuple, Dict, Any
 import torch
 import torch as th
 
-from data.genx_utils.labels import SparselyBatchedObjectLabels
-from data.utils.types import BackboneFeatures, LstmStates, DatasetSamplingMode
+from RVT.data.genx_utils.labels import SparselyBatchedObjectLabels
+from RVT.data.utils.types import BackboneFeatures, LstmStates, DatasetSamplingMode
 
 
 class Mode(Enum):

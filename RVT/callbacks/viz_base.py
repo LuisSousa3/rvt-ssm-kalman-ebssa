@@ -10,7 +10,7 @@ from omegaconf import DictConfig
 from lightning.pytorch.callbacks import Callback
 from lightning.pytorch.utilities.rank_zero import rank_zero_only
 
-from loggers.wandb_logger import WandbLogger
+from RVT.loggers.wandb_logger import WandbLogger
 
 
 class VizCallbackBase(Callback):

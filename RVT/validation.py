@@ -22,9 +22,9 @@ import lightning.pytorch as pl
 from lightning.pytorch.loggers import CSVLogger
 from lightning.pytorch.callbacks import ModelSummary
 
-from config.modifier import dynamically_modify_train_config
-from modules.utils.fetch import fetch_data_module, fetch_model_module
-from modules.detection import Module
+from RVT.config.modifier import dynamically_modify_train_config
+from RVT.modules.utils.fetch import fetch_data_module, fetch_model_module
+from RVT.modules.detection import Module
 
 
 @hydra.main(config_path="config", config_name="val", version_base="1.2")

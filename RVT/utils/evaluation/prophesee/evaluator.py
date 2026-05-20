@@ -1,20 +1,26 @@
-from typing import Any, List, Optional, Dict
+from typing import Any, Dict, List, Optional, Tuple
 from warnings import warn
 
 import numpy as np
 
-from utils.evaluation.prophesee.evaluation import evaluate_list
+from RVT.utils.evaluation.prophesee.evaluation import evaluate_list
 
 
 class PropheseeEvaluator:
     LABELS = "lables"
     PREDICTIONS = "predictions"
 
-    def __init__(self, dataset: str, downsample_by_2: bool):
+    def __init__(
+        self,
+        dataset: str,
+        downsample_by_2: bool,
+        class_names: Optional[Tuple[str, ...]] = None,
+    ):
         super().__init__()
         assert dataset in {"gen1", "gen4"}
         self.dataset = dataset
         self.downsample_by_2 = downsample_by_2
+        self.class_names = class_names
 
         self._buffer = None
         self._buffer_empty = True
@@ -76,5 +82,6 @@ class PropheseeEvaluator:
             apply_bbox_filters=True,
             downsampled_by_2=self.downsample_by_2,
             camera=self.dataset,
+            classes=self.class_names,
         )
         return metrics

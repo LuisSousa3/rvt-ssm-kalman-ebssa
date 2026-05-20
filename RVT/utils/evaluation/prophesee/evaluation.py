@@ -8,18 +8,22 @@ def evaluate_list(
     height: int,
     width: int,
     camera: str = "gen1",
+    classes=None,
     apply_bbox_filters: bool = True,
     downsampled_by_2: bool = False,
     return_aps: bool = True,
 ):
     assert camera in {"gen1", "gen4"}
 
-    if camera == "gen1":
-        classes = ("car", "pedestrian")
-    elif camera == "gen4":
-        classes = ("pedestrian", "two-wheeler", "car")
+    if classes is None:
+        if camera == "gen1":
+            classes = ("car", "pedestrian")
+        elif camera == "gen4":
+            classes = ("pedestrian", "two-wheeler", "car")
+        else:
+            raise NotImplementedError
     else:
-        raise NotImplementedError
+        classes = tuple(classes)
 
     if apply_bbox_filters:
         # Default values taken from: https://github.com/prophesee-ai/prophesee-automotive-dataset-toolbox/blob/0393adea2bf22d833893c8cb1d986fcbe4e6f82d/src/psee_evaluator.py#L23-L24

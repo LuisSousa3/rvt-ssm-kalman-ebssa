@@ -48,7 +48,9 @@ def drop_block_2d(
 
     # Forces the block to be inside the feature map.
     w_i, h_i = torch.meshgrid(
-        torch.arange(W).to(x.device), torch.arange(H).to(x.device)
+        torch.arange(W).to(x.device),
+        torch.arange(H).to(x.device),
+        indexing="ij",
     )
     valid_block = (
         (w_i >= clipped_block_size // 2) & (w_i < W - (clipped_block_size - 1) // 2)

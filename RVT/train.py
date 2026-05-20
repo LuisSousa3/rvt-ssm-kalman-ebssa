@@ -1,4 +1,6 @@
 import os
+from pathlib import Path
+from typing import Any
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["OMP_NUM_THREADS"] = "1"
@@ -20,15 +22,88 @@ import hdf5plugin
 from omegaconf import DictConfig, OmegaConf
 import lightning.pytorch as pl
 from lightning.pytorch.callbacks import LearningRateMonitor, ModelSummary
+from lightning.pytorch.loggers import CSVLogger
 from lightning.pytorch.strategies import DDPStrategy
 
-from callbacks.custom import get_ckpt_callback, get_viz_callback
-from callbacks.gradflow import GradFlowLogCallback
-from config.modifier import dynamically_modify_train_config
-from data.utils.types import DatasetSamplingMode
-from loggers.utils import get_wandb_logger, get_ckpt_path
-from modules.utils.fetch import fetch_data_module, fetch_model_module
-from modules.detection import Module
+from RVT.callbacks.custom import get_ckpt_callback, get_viz_callback
+from RVT.callbacks.gradflow import GradFlowLogCallback
+from RVT.config.modifier import dynamically_modify_train_config
+from RVT.data.utils.types import DatasetSamplingMode
+from RVT.loggers.utils import get_wandb_logger, get_ckpt_path
+from RVT.modules.utils.fetch import fetch_data_module, fetch_model_module
+from RVT.modules.detection import Module
+
+
+def load_pretrained_weights(
+    module: Module,
+    checkpoint_path: str | Path,
+    reset_classification_head: bool,
+) -> dict[str, Any]:
+    """Load transfer-learning weights while keeping the target class head fresh."""
+    checkpoint_path = Path(checkpoint_path)
+    if not checkpoint_path.exists():
+        raise FileNotFoundError(f"Pretrained checkpoint does not exist: {checkpoint_path}")
+
+    print(f"Loading pretrained weights from {checkpoint_path}")
+    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+    pretrained_state = checkpoint.get("state_dict", checkpoint)
+    target_state = module.state_dict()
+
+    compatible_state = {}
+    skipped_classification_head = []
+    unexpected_keys = []
+    mismatched_non_classification_keys = []
+
+    for key, value in pretrained_state.items():
+        if reset_classification_head and key.startswith("mdl.yolox_head.cls_preds."):
+            skipped_classification_head.append(key)
+            continue
+
+        target_value = target_state.get(key)
+        if target_value is None:
+            unexpected_keys.append(key)
+            continue
+        if tuple(value.shape) != tuple(target_value.shape):
+            mismatched_non_classification_keys.append(
+                (key, tuple(value.shape), tuple(target_value.shape))
+            )
+            continue
+        compatible_state[key] = value
+
+    if mismatched_non_classification_keys:
+        details = ", ".join(
+            f"{key}: {source_shape} -> {target_shape}"
+            for key, source_shape, target_shape in mismatched_non_classification_keys
+        )
+        raise RuntimeError(
+            "Pretrained checkpoint does not match the requested model outside the "
+            f"classification head: {details}"
+        )
+
+    missing_keys, load_unexpected_keys = module.load_state_dict(
+        compatible_state,
+        strict=False,
+    )
+    if load_unexpected_keys:
+        raise RuntimeError(f"Unexpected keys after filtering pretrained weights: {load_unexpected_keys}")
+
+    print(
+        "Loaded "
+        f"{len(compatible_state)}/{len(pretrained_state)} pretrained tensors; "
+        f"kept {len(skipped_classification_head)} classification-head tensors freshly initialized "
+        f"for {module.mdl.yolox_head.num_classes} target class(es)."
+    )
+    if unexpected_keys:
+        print(f"Ignored {len(unexpected_keys)} unexpected checkpoint tensors.")
+
+    return {
+        "checkpoint_path": str(checkpoint_path),
+        "loaded_tensors": len(compatible_state),
+        "checkpoint_tensors": len(pretrained_state),
+        "skipped_classification_head": tuple(skipped_classification_head),
+        "missing_keys": tuple(missing_keys),
+        "unexpected_keys": tuple(unexpected_keys),
+    }
 
 
 @hydra.main(config_path="config", config_name="train", version_base="1.2")
@@ -64,24 +139,31 @@ def main(config: DictConfig):
     # ---------------------
     # DDP
     # ---------------------
-    gpu_config = config.hardware.gpus
-    gpus = (
-        OmegaConf.to_container(gpu_config)
-        if OmegaConf.is_config(gpu_config)
-        else gpu_config
-    )
-    gpus = gpus if isinstance(gpus, list) else [gpus]
-    distributed_backend = config.hardware.dist_backend
-    assert distributed_backend in ("nccl", "gloo"), f"{distributed_backend=}"
-    strategy = (
-        DDPStrategy(
-            process_group_backend=distributed_backend,
-            find_unused_parameters=True,
-            gradient_as_bucket_view=True,
+    accelerator = config.hardware.get("accelerator", "gpu")
+    assert accelerator in ("gpu", "cpu"), f"{accelerator=}"
+    if accelerator == "gpu":
+        gpu_config = config.hardware.gpus
+        gpus = (
+            OmegaConf.to_container(gpu_config)
+            if OmegaConf.is_config(gpu_config)
+            else gpu_config
         )
-        if len(gpus) > 1
-        else "auto"
-    )
+        gpus = gpus if isinstance(gpus, list) else [gpus]
+        devices = gpus
+        distributed_backend = config.hardware.dist_backend
+        assert distributed_backend in ("nccl", "gloo"), f"{distributed_backend=}"
+        strategy = (
+            DDPStrategy(
+                process_group_backend=distributed_backend,
+                find_unused_parameters=True,
+                gradient_as_bucket_view=True,
+            )
+            if len(gpus) > 1
+            else "auto"
+        )
+    else:
+        devices = 1
+        strategy = "auto"
 
     # ---------------------
     # Data
@@ -91,15 +173,27 @@ def main(config: DictConfig):
     # ---------------------
     # Logging and Checkpoints
     # ---------------------
-    logger = get_wandb_logger(config)
+    wandb_logger = get_wandb_logger(config)
+    csv_log_dir = os.environ.get("RVT_CSV_LOG_DIR", "data/rvt_csv_logs")
+    csv_logger = CSVLogger(save_dir=csv_log_dir, name=config.wandb.group_name)
+    loggers = [wandb_logger, csv_logger]
     ckpt_path = None
     if config.wandb.artifact_name is not None:
-        ckpt_path = get_ckpt_path(logger, wandb_config=config.wandb)
+        ckpt_path = get_ckpt_path(wandb_logger, wandb_config=config.wandb)
 
     # ---------------------
     # Model
     # ---------------------
     module = fetch_model_module(config=config)
+    pretrained_checkpoint = config.training.get("pretrained_checkpoint", None)
+    if ckpt_path is None and pretrained_checkpoint is not None:
+        load_pretrained_weights(
+            module=module,
+            checkpoint_path=pretrained_checkpoint,
+            reset_classification_head=bool(
+                config.training.pretrained_reset_classification_head
+            ),
+        )
     if ckpt_path is not None and config.wandb.resume_only_weights:
         print("Resuming only the weights instead of the full training state")
         module = Module.load_from_checkpoint(
@@ -124,7 +218,7 @@ def main(config: DictConfig):
         callbacks.append(viz_callback)
     callbacks.append(ModelSummary(max_depth=2))
 
-    logger.watch(
+    wandb_logger.watch(
         model=module,
         log="all",
         log_freq=config.logging.train.log_model_every_n_steps,
@@ -140,18 +234,18 @@ def main(config: DictConfig):
     assert val_check_interval is None or check_val_every_n_epoch is None
 
     trainer = pl.Trainer(
-        accelerator="gpu",
+        accelerator=accelerator,
         callbacks=callbacks,
         enable_checkpointing=True,
         val_check_interval=val_check_interval,
         check_val_every_n_epoch=check_val_every_n_epoch,
         default_root_dir=None,
-        devices=gpus,
+        devices=devices,
         gradient_clip_val=config.training.gradient_clip_val,
         gradient_clip_algorithm="value",
         limit_train_batches=config.training.limit_train_batches,
         limit_val_batches=config.validation.limit_val_batches,
-        logger=logger,
+        logger=loggers,
         log_every_n_steps=config.logging.train.log_every_n_steps,
         plugins=None,
         precision=config.training.precision,

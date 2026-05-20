@@ -13,7 +13,7 @@ except ImportError:
     th_compile = None
 
 from ...yolox.models.network_blocks import BaseConv, CSPLayer, DWConv
-from data.utils.types import BackboneFeatures
+from RVT.data.utils.types import BackboneFeatures
 
 
 class YOLOPAFPN(nn.Module):

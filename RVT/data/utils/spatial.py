@@ -1,6 +1,6 @@
 from omegaconf import DictConfig
 
-from data.utils.types import DatasetType
+from RVT.data.utils.types import DatasetType
 
 _type_2_hw = {
     DatasetType.GEN1: (240, 304),

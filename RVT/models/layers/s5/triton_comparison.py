@@ -4,7 +4,7 @@ import time
 import triton
 import triton.language as tl
 from triton.runtime.jit import TensorWrapper, reinterpret
-from jax_func import associative_scan
+from RVT.models.layers.s5.jax_func import associative_scan
 
 int_dtypes = ["int8", "int16", "int32", "int64"]
 uint_dtypes = ["uint8", "uint16", "uint32", "uint64"]

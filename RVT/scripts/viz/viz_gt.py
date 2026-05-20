@@ -17,11 +17,11 @@ import imageio.v3 as iio
 import torch as th
 from tqdm import tqdm
 
-from data.utils.types import DataType, DatasetType
-from data.genx_utils.sequence_for_streaming import SequenceForIter
-from data.genx_utils.labels import ObjectLabels
-from utils.evaluation.prophesee.io.box_loading import loaded_label_to_prophesee
-from callbacks.viz_base import VizCallbackBase
+from RVT.data.utils.types import DataType, DatasetType
+from RVT.data.genx_utils.sequence_for_streaming import SequenceForIter
+from RVT.data.genx_utils.labels import ObjectLabels
+from RVT.utils.evaluation.prophesee.io.box_loading import loaded_label_to_prophesee
+from RVT.callbacks.viz_base import VizCallbackBase
 import cv2
 import numpy as np
 import bbox_visualizer as bbv

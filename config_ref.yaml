@@ -1,0 +1,35 @@
+
+# EBSSA → GEN1 Dataset Conversion Configuration
+
+# Data paths
+data:
+  input_dir: "data/ebssa"
+  output_dir: "data/ebssa_gen1"
+
+  sensor:
+    atis_size:  [240, 304]
+    davis_size: [240, 304]
+
+    bbox_size: 22.0
+    # 0 = RSO (only one class in EBSSA).
+    class_id: 0
+
+
+# Frame / binning parameters
+frame:
+  duration_ms: 50
+  n_bins: 10
+
+# Segment / split parameters
+split:
+  # GEN1 uses 60 s segments; adjust for your needs.
+  segment_duration_s: 60
+
+  train_ratio: 0.70
+  val_ratio:   0.15
+  test_ratio:  0.15
+  seed: 42
+
+  # If true, recordings with nObj == 0 (no labeled objects) are also included
+  include_unlabeled: false
+

@@ -10,9 +10,9 @@ except ImportError:
 
 from ...recurrent_backbone import build_recurrent_backbone
 from .build import build_yolox_fpn, build_yolox_head
-from utils.timers import TimerDummy as CudaTimer
+from RVT.utils.timers import TimerDummy as CudaTimer
 
-from data.utils.types import BackboneFeatures, LstmStates
+from RVT.data.utils.types import BackboneFeatures, LstmStates
 
 
 class YoloXDetector(th.nn.Module):

@@ -3,16 +3,16 @@ from pathlib import Path
 from typing import List, Union
 
 from omegaconf import DictConfig
-from torchdata.datapipes.map import MapDataPipe
 from tqdm import tqdm
 
-from data.genx_utils.sequence_for_streaming import (
+from RVT.data.genx_utils.sequence_for_streaming import (
     SequenceForIter,
     RandAugmentIterDataPipe,
 )
-from data.utils.stream_concat_datapipe import ConcatStreamingDataPipe
-from data.utils.stream_sharded_datapipe import ShardedStreamingDataPipe
-from data.utils.types import DatasetMode, DatasetType
+from RVT.data.utils.datapipe_compat import MapDataPipe
+from RVT.data.utils.stream_concat_datapipe import ConcatStreamingDataPipe
+from RVT.data.utils.stream_sharded_datapipe import ShardedStreamingDataPipe
+from RVT.data.utils.types import DatasetMode, DatasetType
 
 
 def build_streaming_dataset(

@@ -32,7 +32,7 @@ from .weight_init import trunc_normal_
 def rel_pos_indices(size):
     size = to_2tuple(size)
     pos = torch.stack(
-        torch.meshgrid(torch.arange(size[0]), torch.arange(size[1]))
+        torch.meshgrid(torch.arange(size[0]), torch.arange(size[1]), indexing="ij")
     ).flatten(1)
     rel_pos = pos[:, None, :] - pos[:, :, None]
     rel_pos[0] += size[0] - 1

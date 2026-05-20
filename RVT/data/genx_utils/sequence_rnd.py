@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from data.genx_utils.labels import SparselyBatchedObjectLabels
-from data.genx_utils.sequence_base import SequenceBase
-from data.utils.types import DataType, DatasetType, LoaderDataDictGenX
-from utils.timers import TimerDummy as Timer
+from RVT.data.genx_utils.labels import SparselyBatchedObjectLabels
+from RVT.data.genx_utils.sequence_base import SequenceBase
+from RVT.data.utils.types import DataType, DatasetType, LoaderDataDictGenX
+from RVT.utils.timers import TimerDummy as Timer
 
 
 class SequenceForRandomAccess(SequenceBase):

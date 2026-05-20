@@ -3,13 +3,13 @@ from typing import Any, List, Optional
 import torch
 import torch.distributed as dist
 from torch.utils.data import DataLoader
-from torchdata.datapipes.iter import (
+from RVT.data.utils.datapipe_compat import (
     Concater,
     IterableWrapper,
     IterDataPipe,
+    MapDataPipe,
     ZipperLongest,
 )
-from torchdata.datapipes.map import MapDataPipe
 
 
 class ShardedStreamingDataPipe(IterDataPipe):

@@ -14,7 +14,7 @@ try:
 except ImportError:
     th_compile = None
 
-from models.detection.yolox.utils import bboxes_iou
+from RVT.models.detection.yolox.utils import bboxes_iou
 
 from .losses import IOUloss
 from .network_blocks import BaseConv, DWConv
@@ -254,7 +254,9 @@ class YOLOXHead(nn.Module):
         n_ch = 5 + self.num_classes
         hsize, wsize = output.shape[-2:]
         if grid.shape[2:4] != output.shape[2:4]:
-            yv, xv = torch.meshgrid([torch.arange(hsize), torch.arange(wsize)])
+            yv, xv = torch.meshgrid(
+                torch.arange(hsize), torch.arange(wsize), indexing="ij"
+            )
             grid = torch.stack((xv, yv), 2).view(1, 1, hsize, wsize, 2).type(dtype)
             self.grids[k] = grid
 
@@ -274,10 +276,9 @@ class YOLOXHead(nn.Module):
             strides = []
             for (hsize, wsize), stride in zip(self.hw, self.strides):
                 yv, xv = torch.meshgrid(
-                    [
-                        torch.arange(hsize, device=device, dtype=dtype),
-                        torch.arange(wsize, device=device, dtype=dtype),
-                    ]
+                    torch.arange(hsize, device=device, dtype=dtype),
+                    torch.arange(wsize, device=device, dtype=dtype),
+                    indexing="ij",
                 )
                 grid = torch.stack((xv, yv), 2).view(1, -1, 2)
                 grids.append(grid)
@@ -508,7 +509,7 @@ class YOLOXHead(nn.Module):
         if mode == "cpu":
             cls_preds_, obj_preds_ = cls_preds_.cpu(), obj_preds_.cpu()
 
-        with torch.cuda.amp.autocast(enabled=False):
+        with torch.amp.autocast(device_type=cls_preds_.device.type, enabled=False):
             cls_preds_ = (
                 cls_preds_.float().sigmoid_() * obj_preds_.float().sigmoid_()
             ).sqrt()

@@ -8,6 +8,8 @@ training:
   max_steps: 400000
   learning_rate: 0.0002
   weight_decay: 0
+  pretrained_checkpoint: null
+  pretrained_reset_classification_head: false
   gradient_clip_val: 1.0
   limit_train_batches: 1.0
   lr_scheduler:
@@ -24,6 +26,7 @@ batch_size:
   train: 8
   eval: 8
 hardware:
+  accelerator: gpu
   num_workers:
     train: 6
     eval: 2
@@ -58,5 +61,7 @@ wandb:
   artifact_name: null # Name of checkpoint/artifact. Required for resuming. E.g. USERNAME/PROJECTNAME/checkpoint-1grv5kg6-last:v15
   artifact_local_file: null # If specified, will use the provided local filepath instead of downloading it. Required if resuming with DDP.
   resume_only_weights: False
+  log_model: True
+  run_name: null
   group_name: ??? # Specify group name of the run
   project_name: RVT

@@ -6,15 +6,15 @@ import lightning.pytorch as pl
 from omegaconf import DictConfig
 from torch.utils.data import DataLoader, Dataset
 
-from data.genx_utils.collate import custom_collate_rnd, custom_collate_streaming
-from data.genx_utils.dataset_rnd import (
+from RVT.data.genx_utils.collate import custom_collate_rnd, custom_collate_streaming
+from RVT.data.genx_utils.dataset_rnd import (
     build_random_access_dataset,
     get_weighted_random_sampler,
     CustomConcatDataset,
 )
-from data.genx_utils.dataset_streaming import build_streaming_dataset
-from data.utils.spatial import get_dataloading_hw
-from data.utils.types import DatasetMode, DatasetSamplingMode
+from RVT.data.genx_utils.dataset_streaming import build_streaming_dataset
+from RVT.data.utils.spatial import get_dataloading_hw
+from RVT.data.utils.types import DatasetMode, DatasetSamplingMode
 
 
 def get_dataloader_kwargs(

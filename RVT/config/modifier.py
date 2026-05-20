@@ -4,7 +4,7 @@ from typing import Tuple
 import math
 from omegaconf import DictConfig, open_dict
 
-from data.utils.spatial import get_dataloading_hw
+from RVT.data.utils.spatial import get_dataloading_hw
 
 
 def dynamically_modify_train_config(config: DictConfig):
@@ -48,7 +48,14 @@ def dynamically_modify_train_config(config: DictConfig):
             else:
                 print(f"{backbone_name=} not available")
                 raise NotImplementedError
-            num_classes = 2 if dataset_name == "gen1" else 3
+            default_num_classes = 2 if dataset_name == "gen1" else 3
+            num_classes = int(dataset_cfg.get("num_classes", default_num_classes))
+            class_names = dataset_cfg.get("class_names", None)
+            if class_names is not None:
+                assert len(class_names) == num_classes, (
+                    f"Expected {num_classes} class names, got {len(class_names)}: "
+                    f"{tuple(class_names)}"
+                )
             mdl_cfg.head.num_classes = num_classes
             print(f"Set {num_classes=} for detection head")
         else:

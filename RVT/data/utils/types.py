@@ -8,7 +8,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import torch as th
 
-from data.genx_utils.labels import ObjectLabels, SparselyBatchedObjectLabels
+from RVT.data.genx_utils.labels import ObjectLabels, SparselyBatchedObjectLabels
 
 
 class DataType(Enum):

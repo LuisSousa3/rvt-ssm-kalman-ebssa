@@ -1,8 +1,10 @@
+from pathlib import Path
+
 from omegaconf import DictConfig
 from lightning.pytorch.callbacks import Callback
 from lightning.pytorch.callbacks import ModelCheckpoint
 
-from callbacks.detection import DetectionVizCallback
+from RVT.callbacks.detection import DetectionVizCallback
 
 
 def get_ckpt_callback(config: DictConfig) -> ModelCheckpoint:
@@ -24,7 +26,13 @@ def get_ckpt_callback(config: DictConfig) -> ModelCheckpoint:
         + ckpt_callback_monitor
         + ":.2f}"
     )
+    run_name = config.wandb.get("run_name", None)
+    checkpoint_dir = None
+    if run_name is not None:
+        checkpoint_dir = Path(config.wandb.project_name) / str(run_name) / "checkpoints"
+
     cktp_callback = ModelCheckpoint(
+        dirpath=checkpoint_dir,
         monitor=ckpt_callback_monitor,
         filename=ckpt_filename,
         auto_insert_metric_name=False,  # because backslash would create a directory

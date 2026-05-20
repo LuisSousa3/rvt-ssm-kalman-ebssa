@@ -3,8 +3,8 @@ from typing import Any, Callable, Dict, Optional, Type, Tuple, Union
 
 import torch
 
-from data.genx_utils.collate_from_pytorch import collate, default_collate_fn_map
-from data.genx_utils.labels import ObjectLabels, SparselyBatchedObjectLabels
+from RVT.data.genx_utils.collate_from_pytorch import collate, default_collate_fn_map
+from RVT.data.genx_utils.labels import ObjectLabels, SparselyBatchedObjectLabels
 
 
 def collate_object_labels(

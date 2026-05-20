@@ -10,13 +10,13 @@ from omegaconf import DictConfig
 from lightning.pytorch.utilities.types import STEP_OUTPUT
 from einops import rearrange
 
-from data.genx_utils.labels import ObjectLabels
-from data.utils.types import DataType, LstmStates, ObjDetOutput, DatasetSamplingMode
-from models.detection.yolox.utils.boxes import postprocess
-from models.detection.yolox_extension.models.detector import YoloXDetector
-from utils.evaluation.prophesee.evaluator import PropheseeEvaluator
-from utils.evaluation.prophesee.io.box_loading import to_prophesee
-from utils.padding import InputPadderFromShape
+from RVT.data.genx_utils.labels import ObjectLabels
+from RVT.data.utils.types import DataType, LstmStates, ObjDetOutput, DatasetSamplingMode
+from RVT.models.detection.yolox.utils.boxes import postprocess
+from RVT.models.detection.yolox_extension.models.detector import YoloXDetector
+from RVT.utils.evaluation.prophesee.evaluator import PropheseeEvaluator
+from RVT.utils.evaluation.prophesee.io.box_loading import to_prophesee
+from RVT.utils.padding import InputPadderFromShape
 from .utils.detection import (
     BackboneFeatureSelector,
     EventReprSelector,
@@ -47,6 +47,12 @@ class Module(pl.LightningModule):
 
     def setup(self, stage: Optional[str] = None) -> None:
         dataset_name = self.full_config.dataset.name
+        dataset_class_names_cfg = self.full_config.dataset.get("class_names", None)
+        dataset_class_names = (
+            None
+            if dataset_class_names_cfg is None
+            else tuple(str(name) for name in dataset_class_names_cfg)
+        )
         self.mode_2_hw: Dict[Mode, Optional[Tuple[int, int]]] = {}
         self.mode_2_batch_size: Dict[Mode, Optional[int]] = {}
         self.mode_2_psee_evaluator: Dict[Mode, Optional[PropheseeEvaluator]] = {}
@@ -69,10 +75,12 @@ class Module(pl.LightningModule):
                 self.mode_2_psee_evaluator[Mode.TRAIN] = PropheseeEvaluator(
                     dataset=dataset_name,
                     downsample_by_2=self.full_config.dataset.downsample_by_factor_2,
+                    class_names=dataset_class_names,
                 )
             self.mode_2_psee_evaluator[Mode.VAL] = PropheseeEvaluator(
                 dataset=dataset_name,
                 downsample_by_2=self.full_config.dataset.downsample_by_factor_2,
+                class_names=dataset_class_names,
             )
             self.mode_2_sampling_mode[Mode.TRAIN] = dataset_train_sampling
             self.mode_2_sampling_mode[Mode.VAL] = dataset_eval_sampling
@@ -86,6 +94,7 @@ class Module(pl.LightningModule):
             self.mode_2_psee_evaluator[mode] = PropheseeEvaluator(
                 dataset=dataset_name,
                 downsample_by_2=self.full_config.dataset.downsample_by_factor_2,
+                class_names=dataset_class_names,
             )
             self.mode_2_sampling_mode[Mode.VAL] = dataset_eval_sampling
             self.mode_2_hw[mode] = None
@@ -95,6 +104,7 @@ class Module(pl.LightningModule):
             self.mode_2_psee_evaluator[mode] = PropheseeEvaluator(
                 dataset=dataset_name,
                 downsample_by_2=self.full_config.dataset.downsample_by_factor_2,
+                class_names=dataset_class_names,
             )
             self.mode_2_sampling_mode[Mode.TEST] = dataset_eval_sampling
             self.mode_2_hw[mode] = None

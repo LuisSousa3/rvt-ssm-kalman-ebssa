@@ -3,13 +3,13 @@ from typing import Any, Iterator, List, Optional, Type
 import torch as th
 import torch.distributed as dist
 from torch.utils.data import DataLoader
-from torchdata.datapipes.iter import (
+from RVT.data.utils.datapipe_compat import (
     Concater,
     IterableWrapper,
     IterDataPipe,
+    MapDataPipe,
     Zipper,
 )
-from torchdata.datapipes.map import MapDataPipe
 
 
 class DummyIterDataPipe(IterDataPipe):

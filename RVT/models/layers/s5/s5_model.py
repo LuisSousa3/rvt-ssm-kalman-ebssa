@@ -9,8 +9,8 @@ if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))
 sys.path.append(os.path.join(ROOT, "RVT"))
 
-from models.layers.s5.jax_func import associative_scan
-from models.layers.s5.s5_init import *
+from RVT.models.layers.s5.jax_func import associative_scan
+from RVT.models.layers.s5.s5_init import *
 
 # Runtime functions
 

@@ -71,7 +71,8 @@ def build_sincos2d_pos_embed(
     grid = (
         torch.stack(
             torch.meshgrid(
-                [torch.arange(s, device=device, dtype=dtype) for s in feat_shape]
+                [torch.arange(s, device=device, dtype=dtype) for s in feat_shape],
+                indexing="ij",
             )
         )
         .flatten(1)
@@ -122,14 +123,16 @@ def build_fourier_pos_embed(
                 [
                     torch.linspace(-1.0, 1.0, steps=s, device=device, dtype=dtype)
                     for s in feat_shape
-                ]
+                ],
+                indexing="ij",
             ),
             dim=-1,
         )
     else:
         grid = torch.stack(
             torch.meshgrid(
-                [torch.arange(s, device=device, dtype=dtype) for s in feat_shape]
+                [torch.arange(s, device=device, dtype=dtype) for s in feat_shape],
+                indexing="ij",
             ),
             dim=-1,
         )

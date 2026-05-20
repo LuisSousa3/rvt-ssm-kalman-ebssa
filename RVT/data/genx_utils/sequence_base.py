@@ -4,12 +4,12 @@ from typing import Any, List, Optional
 import h5py
 import numpy as np
 import torch
-from torchdata.datapipes.map import MapDataPipe
 
-from data.genx_utils.labels import ObjectLabelFactory, ObjectLabels
-from data.utils.spatial import get_original_hw
-from data.utils.types import DatasetType
-from utils.timers import TimerDummy as Timer
+from RVT.data.genx_utils.labels import ObjectLabelFactory, ObjectLabels
+from RVT.data.utils.datapipe_compat import MapDataPipe
+from RVT.data.utils.spatial import get_original_hw
+from RVT.data.utils.types import DatasetType
+from RVT.utils.timers import TimerDummy as Timer
 
 
 def get_event_representation_dir(path: Path, ev_representation_name: str) -> Path:

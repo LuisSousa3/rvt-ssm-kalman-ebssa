@@ -4,7 +4,7 @@ from typing import Union
 import wandb
 from omegaconf import DictConfig, OmegaConf
 
-from loggers.wandb_logger import WandbLogger
+from RVT.loggers.wandb_logger import WandbLogger
 
 
 def get_wandb_logger(full_config: DictConfig) -> WandbLogger:
@@ -22,10 +22,11 @@ def get_wandb_logger(full_config: DictConfig) -> WandbLogger:
         full_config, resolve=True, throw_on_missing=True
     )
     logger = WandbLogger(
+        name=wandb_config.get("run_name", None),
         project=wandb_config.project_name,
         group=wandb_config.group_name,
         wandb_id=wandb_id,
-        log_model=True,
+        log_model=wandb_config.get("log_model", True),
         save_last_only_final=False,
         save_code=True,
         config_args=full_config_dict,

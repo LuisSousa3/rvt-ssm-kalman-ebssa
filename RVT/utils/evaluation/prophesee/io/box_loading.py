@@ -15,7 +15,7 @@ from typing import List, Optional, Tuple
 import numpy as np
 import torch as th
 
-from data.genx_utils.labels import ObjectLabels
+from RVT.data.genx_utils.labels import ObjectLabels
 
 BBOX_DTYPE = np.dtype(
     {

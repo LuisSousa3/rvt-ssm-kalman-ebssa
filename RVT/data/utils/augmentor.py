@@ -10,9 +10,9 @@ from torch.nn.functional import interpolate
 from torchvision.transforms import InterpolationMode
 from torchvision.transforms.functional import rotate
 
-from data.genx_utils.labels import ObjectLabels, SparselyBatchedObjectLabels
-from data.utils.types import DataType, LoaderDataDictGenX
-from utils.helpers import torch_uniform_sample_scalar
+from RVT.data.genx_utils.labels import ObjectLabels, SparselyBatchedObjectLabels
+from RVT.data.utils.types import DataType, LoaderDataDictGenX
+from RVT.utils.helpers import torch_uniform_sample_scalar
 
 NO_LABEL_WARN_MSG = (
     "No Labels found. This can lead to a crash and should not happen often."

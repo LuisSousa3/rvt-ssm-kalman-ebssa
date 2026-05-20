@@ -28,8 +28,8 @@ from omegaconf import OmegaConf, DictConfig, MISSING
 import torch
 from tqdm import tqdm
 
-from utils.preprocessing import _blosc_opts
-from data.utils.representations import (
+from RVT.utils.preprocessing import _blosc_opts
+from RVT.data.utils.representations import (
     MixedDensityEventStack,
     StackedHistogram,
     RepresentationBase,

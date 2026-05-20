@@ -4,7 +4,7 @@ import lightning.pytorch as pl
 from lightning.pytorch.callbacks import Callback
 from lightning.pytorch.utilities.rank_zero import rank_zero_only
 
-from callbacks.utils.visualization import get_grad_flow_figure
+from RVT.callbacks.utils.visualization import get_grad_flow_figure
 
 
 class GradFlowLogCallback(Callback):
